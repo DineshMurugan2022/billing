@@ -118,7 +118,6 @@ export const useCartStore = create<CartState>((set, get) => ({
   },
 
   totalTax: () => {
-    const { isIGST } = get();
     return get().items.reduce((sum, i) => {
       const rate = GST_RATES[i.gstSlab] || 0;
       const lineTotal = i.sellingPrice * i.quantity;

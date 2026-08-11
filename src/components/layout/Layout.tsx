@@ -2,7 +2,7 @@ import { Outlet, NavLink, useNavigate } from 'react-router-dom';
 import {
   LayoutDashboard, ShoppingCart, Package, Archive,
   Users, Truck, BarChart3, Receipt, Settings, LogOut,
-  Store, Bell, ChevronRight, Wifi, WifiOff
+  Store, Bell, ChevronRight, Wifi
 } from 'lucide-react';
 import { useAuthStore } from '../../store';
 import { useState } from 'react';

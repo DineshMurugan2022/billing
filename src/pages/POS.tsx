@@ -5,14 +5,13 @@ import { useCartStore, useAuthStore } from '../store';
 import {
   Search, Barcode, ShoppingCart, Trash2, Plus, Minus,
   User, CreditCard, Smartphone, Banknote, Check, X,
-  Receipt, Printer, ChevronDown, Tag, AlertCircle, Keyboard
+  Receipt, Printer, Tag, Keyboard
 } from 'lucide-react';
 import CustomerModal from '../components/CustomerModal';
 
 // ─── Payment Modal ────────────────────────────────────
 function PaymentModal({ open, onClose, onSuccess }: { open: boolean; onClose: () => void; onSuccess: (bill: any) => void }) {
   const { grandTotal, items, customerId, discountAmount, discountPercent, isIGST, clearCart } = useCartStore();
-  const { user } = useAuthStore();
   const [mode, setMode] = useState<'CASH' | 'CARD' | 'UPI' | 'MIXED'>('CASH');
   const [cashInput, setCashInput] = useState('');
   const [receivedByInput, setReceivedByInput] = useState('');
@@ -371,7 +370,7 @@ export default function POSPage() {
   const searchRef = useRef<HTMLInputElement>(null);
   const scanTimeout = useRef<ReturnType<typeof setTimeout>>();
 
-  const { items, addItem, removeItem, updateQty, updateDiscount, setCustomer, customerId, customerName, clearCart, subtotal, totalDiscount, totalTax, grandTotal } = useCartStore();
+  const { items, addItem, removeItem, updateQty, setCustomer, customerId, customerName, clearCart, subtotal, totalDiscount, totalTax, grandTotal } = useCartStore();
 
   // Barcode scanner listener (USB HID keyboard wedge)
   useEffect(() => {

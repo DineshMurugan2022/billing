@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { billingApi } from '../lib/api';
-import { Receipt, Search, Eye, Download } from 'lucide-react';
+import { Receipt, Search, Eye } from 'lucide-react';
 import dayjs from 'dayjs';
 
 export default function BillsPage() {

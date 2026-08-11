@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { customersApi } from '../lib/api';
-import { Users, Plus, Search, Star, CreditCard, X, Check } from 'lucide-react';
+import { Users, Plus, Search, Star } from 'lucide-react';
 import CustomerModal from '../components/CustomerModal';
 
 export default function CustomersPage() {
