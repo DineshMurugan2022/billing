@@ -39,11 +39,11 @@ const CustomTooltip = ({ active, payload, label }: any) => {
 
 export default function DashboardPage() {
   const { user } = useAuthStore();
-  const { data, isLoading } = useQuery({ queryKey: ['dashboard'], queryFn: () => dashboardApi.get().then(r => r.data) });
+  const { data, isPending } = useQuery({ queryKey: ['dashboard'], queryFn: () => dashboardApi.get().then(r => r.data) });
 
   const formatCurrency = (n: number) => `₹${n.toLocaleString('en-IN', { maximumFractionDigits: 0 })}`;
 
-  if (isLoading) return (
+  if (isPending && !data) return (
     <div className="flex items-center justify-center h-64">
       <div className="spinner w-10 h-10" />
     </div>

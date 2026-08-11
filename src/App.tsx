@@ -15,7 +15,16 @@ import SettingsPage from './pages/Settings';
 import StoresPage from './pages/Stores';
 
 const queryClient = new QueryClient({
-  defaultOptions: { queries: { staleTime: 30_000, retry: 1 } },
+  defaultOptions: {
+    queries: {
+      staleTime: 1000 * 60 * 5,       // Data stays fresh for 5 minutes
+      gcTime: 1000 * 60 * 15,          // Retain cache in memory for 15 minutes
+      refetchOnWindowFocus: false,   // Disable automatic refetching on tab switch
+      refetchOnReconnect: false,     // Disable automatic refetching on network reconnect
+      refetchOnMount: false,         // Use cached data instantly when switching tabs/pages
+      retry: 1,
+    },
+  },
 });
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {

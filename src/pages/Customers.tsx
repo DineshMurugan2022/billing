@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { keepPreviousData, useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { customersApi } from '../lib/api';
 import { Users, Plus, Search, Star } from 'lucide-react';
 import CustomerModal from '../components/CustomerModal';
@@ -9,9 +9,10 @@ export default function CustomersPage() {
   const [modal, setModal] = useState<any>(null);
   const qc = useQueryClient();
 
-  const { data, isLoading } = useQuery({
+  const { data, isPending } = useQuery({
     queryKey: ['customers', search],
     queryFn: () => customersApi.list({ search }).then(r => r.data),
+    placeholderData: keepPreviousData,
   });
 
   const create = useMutation({ mutationFn: (d: any) => customersApi.create(d), onSuccess: () => { qc.invalidateQueries({ queryKey: ['customers'] }); setModal(null); } });
@@ -37,7 +38,7 @@ export default function CustomersPage() {
       </div>
 
       <div className="table-container">
-        {isLoading ? <div className="flex justify-center py-12"><div className="spinner w-8 h-8" /></div> : (
+        {isPending && !data ? <div className="flex justify-center py-12"><div className="spinner w-8 h-8" /></div> : (
           <table className="data-table">
             <thead><tr><th>Customer</th><th>Phone</th><th>City</th><th>Loyalty Points</th><th>Outstanding</th><th>Actions</th></tr></thead>
             <tbody>

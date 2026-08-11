@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { keepPreviousData, useQuery } from '@tanstack/react-query';
 import { billingApi } from '../lib/api';
 import { Receipt, Search, Eye } from 'lucide-react';
 import dayjs from 'dayjs';
@@ -8,9 +8,10 @@ export default function BillsPage() {
   const [search, setSearch] = useState('');
   const [page, setPage] = useState(1);
 
-  const { data, isLoading } = useQuery({
+  const { data, isPending } = useQuery({
     queryKey: ['bills', search, page],
     queryFn: () => billingApi.list({ search, page: page.toString() }).then(r => r.data),
+    placeholderData: keepPreviousData,
   });
 
   return (
@@ -30,7 +31,7 @@ export default function BillsPage() {
       </div>
 
       <div className="table-container">
-        {isLoading ? <div className="flex justify-center py-12"><div className="spinner w-8 h-8" /></div> : (
+        {isPending && !data ? <div className="flex justify-center py-12"><div className="spinner w-8 h-8" /></div> : (
           <table className="data-table">
             <thead>
               <tr>

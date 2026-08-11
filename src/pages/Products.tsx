@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { keepPreviousData, useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { productsApi, categoriesApi } from '../lib/api';
 import { Plus, Search, Edit2, Trash2, Package, X, Check, Barcode } from 'lucide-react';
 
@@ -108,9 +108,10 @@ export default function ProductsPage() {
   const [modal, setModal] = useState<any>(null);
   const qc = useQueryClient();
 
-  const { data: productsData, isLoading } = useQuery({
+  const { data: productsData, isPending } = useQuery({
     queryKey: ['products', search],
     queryFn: () => productsApi.list({ search, limit: '50' }).then(r => r.data),
+    placeholderData: keepPreviousData,
   });
 
   const { data: categories } = useQuery({
@@ -156,7 +157,7 @@ export default function ProductsPage() {
       </div>
 
       <div className="table-container">
-        {isLoading ? (
+        {isPending && !productsData ? (
           <div className="flex justify-center py-12"><div className="spinner w-8 h-8" /></div>
         ) : (
           <table className="data-table">

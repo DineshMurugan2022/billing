@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { keepPreviousData, useQuery } from '@tanstack/react-query';
 import { reportsApi } from '../lib/api';
 import { BarChart3, TrendingUp, Package, FileText, Download } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from 'recharts';
@@ -16,18 +16,21 @@ export default function ReportsPage() {
     queryKey: ['reports-sales', startDate, endDate],
     queryFn: () => reportsApi.sales({ startDate, endDate }).then(r => r.data),
     enabled: tab === 'sales',
+    placeholderData: keepPreviousData,
   });
 
   const { data: stockData } = useQuery({
     queryKey: ['reports-stock'],
     queryFn: () => reportsApi.stockValuation().then(r => r.data),
     enabled: tab === 'stock',
+    placeholderData: keepPreviousData,
   });
 
   const { data: gstr1Data } = useQuery({
     queryKey: ['reports-gstr1', gstMonth, gstYear],
     queryFn: () => reportsApi.gstr1({ month: gstMonth, year: gstYear }).then(r => r.data),
     enabled: tab === 'gstr1',
+    placeholderData: keepPreviousData,
   });
 
   const { data: topProducts } = useQuery({

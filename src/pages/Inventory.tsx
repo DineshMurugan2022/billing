@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { keepPreviousData, useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { inventoryApi } from '../lib/api';
 import { Archive, AlertTriangle, TrendingDown, TrendingUp, Package, Search } from 'lucide-react';
 
@@ -8,9 +8,10 @@ export default function InventoryPage() {
   const [search, setSearch] = useState('');
   const qc = useQueryClient();
 
-  const { data, isLoading } = useQuery({
+  const { data, isPending } = useQuery({
     queryKey: ['inventory', lowStock, search],
     queryFn: () => inventoryApi.list({ lowStock: lowStock ? 'true' : 'false', search }).then(r => r.data),
+    placeholderData: keepPreviousData,
   });
 
   const adjust = useMutation({
@@ -62,7 +63,7 @@ export default function InventoryPage() {
       </div>
 
       <div className="table-container">
-        {isLoading ? <div className="flex justify-center py-12"><div className="spinner w-8 h-8" /></div> : (
+        {isPending && !data ? <div className="flex justify-center py-12"><div className="spinner w-8 h-8" /></div> : (
           <table className="data-table">
             <thead>
               <tr>
