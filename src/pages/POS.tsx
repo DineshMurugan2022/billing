@@ -8,13 +8,15 @@ import {
   Receipt, Printer, Tag, Keyboard
 } from 'lucide-react';
 import CustomerModal from '../components/CustomerModal';
+import ReceiptModal from '../components/ReceiptModal';
 
 // ─── Payment Modal ────────────────────────────────────
 function PaymentModal({ open, onClose, onSuccess }: { open: boolean; onClose: () => void; onSuccess: (bill: any) => void }) {
   const { grandTotal, items, customerId, discountAmount, discountPercent, isIGST, clearCart } = useCartStore();
+  const { user } = useAuthStore();
   const [mode, setMode] = useState<'CASH' | 'CARD' | 'UPI' | 'MIXED'>('CASH');
   const [cashInput, setCashInput] = useState('');
-  const [receivedByInput, setReceivedByInput] = useState('');
+  const [receivedByInput, setReceivedByInput] = useState(user?.name || '');
   const [showReceivedModal, setShowReceivedModal] = useState(false);
   const qc = useQueryClient();
 
@@ -42,7 +44,7 @@ function PaymentModal({ open, onClose, onSuccess }: { open: boolean; onClose: ()
       cashAmount: mode === 'CASH' || mode === 'MIXED' ? cashPaid : 0,
       cardAmount: mode === 'CARD' ? total : 0,
       upiAmount: mode === 'UPI' ? total : 0,
-      receivedBy: receivedByInput,
+      receivedBy: receivedByInput || user?.name || 'ADMIN',
       isIGST,
     });
   };
@@ -158,205 +160,7 @@ function PaymentModal({ open, onClose, onSuccess }: { open: boolean; onClose: ()
   );
 }
 
-function numberToWords(num: number): string {
-  if (num === 0) return 'Zero';
-  const a = ['', 'One ', 'Two ', 'Three ', 'Four ', 'Five ', 'Six ', 'Seven ', 'Eight ', 'Nine ', 'Ten ', 'Eleven ', 'Twelve ', 'Thirteen ', 'Fourteen ', 'Fifteen ', 'Sixteen ', 'Seventeen ', 'Eighteen ', 'Nineteen '];
-  const b = ['', '', 'Twenty', 'Thirty', 'Forty', 'Fifty', 'Sixty', 'Seventy', 'Eighty', 'Ninety'];
 
-  const numStr = num.toString();
-  if (numStr.length > 9) return 'overflow';
-  const n = ('000000000' + numStr).slice(-9).match(/^(\d{2})(\d{2})(\d{2})(\d{1})(\d{2})$/);
-  if (!n) return '';
-  let str = '';
-  str += (Number(n[1]) != 0) ? (a[Number(n[1])] || b[n[1][0] as any] + ' ' + a[n[1][1] as any]) + 'Crore ' : '';
-  str += (Number(n[2]) != 0) ? (a[Number(n[2])] || b[n[2][0] as any] + ' ' + a[n[2][1] as any]) + 'Lakh ' : '';
-  str += (Number(n[3]) != 0) ? (a[Number(n[3])] || b[n[3][0] as any] + ' ' + a[n[3][1] as any]) + 'Thousand ' : '';
-  str += (Number(n[4]) != 0) ? (a[Number(n[4])] || b[n[4][0] as any] + ' ' + a[n[4][1] as any]) + 'Hundred ' : '';
-  str += (Number(n[5]) != 0) ? ((str != '') ? 'and ' : '') + (a[Number(n[5])] || b[n[5][0] as any] + ' ' + a[n[5][1] as any]) : '';
-  return str.trim();
-}
-
-// ─── Receipt Modal ────────────────────────────────────
-function ReceiptModal({ bill, onClose }: { bill: any; onClose: () => void }) {
-  const handlePrint = () => window.print();
-
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4 sm:p-8">
-      <div className="card w-full max-w-5xl shadow-2xl animate-slide-up max-h-full overflow-y-auto bg-white text-black p-0 rounded-md flex flex-col">
-        <div className="flex items-center justify-between p-4 border-b border-slate-200 no-print bg-white text-slate-900 rounded-t-md sticky top-0 z-10">
-          <h2 className="font-bold text-lg flex items-center gap-2"><Receipt size={20} /> Receipt</h2>
-          <div className="flex gap-2">
-            <button onClick={handlePrint} className="btn-secondary btn-sm bg-brand-600 hover:bg-brand-500 text-white border-none"><Printer size={16} /> Print</button>
-            <button onClick={onClose} className="btn-icon btn-ghost text-slate-500 hover:text-slate-900"><X size={20} /></button>
-          </div>
-        </div>
-        
-        {/* Print Content */}
-        <div className="p-8 print-receipt bg-white text-black font-sans w-full mx-auto flex-1 text-[13px] leading-tight" style={{ maxWidth: '210mm' }}>
-          
-          {/* Header Row */}
-          <div className="flex justify-between items-center pb-2">
-            <div className="flex items-center gap-2">
-              <span className="font-semibold text-sm">Kiosk:</span>
-              <div className="flex items-center h-8 bg-black w-40" style={{ maskImage: 'repeating-linear-gradient(to right, black 0, black 2px, transparent 2px, transparent 4px, black 4px, black 5px, transparent 5px, transparent 7px)', WebkitMaskImage: 'repeating-linear-gradient(to right, black 0, black 2px, transparent 2px, transparent 4px, black 4px, black 5px, transparent 5px, transparent 7px)' }}></div>
-            </div>
-            <h1 className="text-xl font-bold tracking-wide uppercase">BILL CUM RECEIPT</h1>
-            <div className="flex items-center h-8 bg-black w-40" style={{ maskImage: 'repeating-linear-gradient(to right, black 0, black 2px, transparent 2px, transparent 4px, black 4px, black 5px, transparent 5px, transparent 7px)', WebkitMaskImage: 'repeating-linear-gradient(to right, black 0, black 2px, transparent 2px, transparent 4px, black 4px, black 5px, transparent 5px, transparent 7px)' }}></div>
-          </div>
-
-          <div className="border-b-[1.5px] border-black my-1"></div>
-
-          {/* Details Section */}
-          <div className="grid grid-cols-2 gap-x-4 gap-y-1 my-3">
-            <div className="space-y-1.5">
-              <div className="flex">
-                <span className="w-24 shrink-0">Name</span>
-                <span className="w-4 shrink-0">:</span>
-                <span className="flex-1 truncate">{bill?.customer?.name ? `${bill.customer.name}${bill.customer.gender ? ` - ${bill.customer.gender}` : ''}${bill.customer.age ? ` - ${bill.customer.age} Yrs` : ''}` : 'Walk-in Customer'}</span>
-              </div>
-              <div className="flex">
-                <span className="w-24 shrink-0">Branch</span>
-                <span className="w-4 shrink-0">:</span>
-                <span className="flex-1 truncate">{bill?.branch?.name || bill?.branch?.store?.name || 'Main Branch'}</span>
-              </div>
-              <div className="flex">
-                <span className="w-24 shrink-0">Client</span>
-                <span className="w-4 shrink-0">:</span>
-                <span className="flex-1 truncate">{bill?.branch?.store?.name || 'MERL DIAGNOSTICS'}</span>
-              </div>
-            </div>
-            <div className="space-y-1.5">
-              <div className="flex">
-                <span className="w-36 shrink-0">Invoice No / Date</span>
-                <span className="w-4 shrink-0">:</span>
-                <span className="flex-1">{bill?.invoiceNumber} / {bill?.createdAt ? new Date(bill.createdAt).toLocaleString('en-IN', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit', hour12: false }).replace(',', '') : ''}</span>
-              </div>
-              <div className="flex">
-                <span className="w-36 shrink-0">Email</span>
-                <span className="w-4 shrink-0">:</span>
-                <span className="flex-1">{bill?.customer?.email || ''}</span>
-              </div>
-              <div className="flex">
-                <span className="w-36 shrink-0">Contact No</span>
-                <span className="w-4 shrink-0">:</span>
-                <span className="flex-1">{bill?.customer?.phone || ''}</span>
-              </div>
-              <div className="flex">
-                <span className="w-36 shrink-0">Expected Report</span>
-                <span className="w-4 shrink-0">:</span>
-                <span className="flex-1">{bill?.createdAt ? new Date(new Date(bill.createdAt).getTime() + 3*60*60*1000).toLocaleString('en-IN', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit', hour12: false }).replace(',', '') : ''}</span>
-              </div>
-            </div>
-          </div>
-
-          <div className="border-b-[1.5px] border-black mt-2"></div>
-
-          {/* Tests/Items Table */}
-          <table className="w-full mb-6">
-            <thead>
-              <tr className="border-b-[1px] border-black">
-                <th className="text-left py-1.5 font-bold">Test Name</th>
-                <th className="text-left py-1.5 font-bold">Remarks</th>
-                <th className="text-right py-1.5 font-bold">Amount</th>
-              </tr>
-            </thead>
-            <tbody className="border-b-[1.5px] border-black">
-              {bill?.items?.map((item: any) => (
-                <tr key={item.id}>
-                  <td className="py-1">{item.productName}</td>
-                  <td className="py-1">{item.quantity > 1 ? `${item.quantity} x ₹${item.sellingPrice}` : ''}</td>
-                  <td className="text-right py-1">{item.totalAmount?.toFixed(2)}</td>
-                </tr>
-              ))}
-              <tr><td colSpan={3} className="py-1"></td></tr>
-            </tbody>
-          </table>
-
-          {/* Receipts & Summary Grid */}
-          <div className="grid grid-cols-[1fr_250px] gap-6 items-start">
-            
-            {/* Left side: Receipts Table */}
-            <div>
-              <table className="w-full border border-black text-[12px] mb-3">
-                <thead>
-                  <tr className="border-b border-black">
-                    <th className="text-left py-1 px-1.5 border-r border-black font-bold">Receipt No</th>
-                    <th className="text-left py-1 px-1.5 border-r border-black font-bold">Receipt Date</th>
-                    <th className="text-right py-1 px-1.5 border-r border-black font-bold">Amount</th>
-                    <th className="text-left py-1 px-1.5 border-r border-black font-bold">Mode</th>
-                    <th className="text-left py-1 px-1.5 font-bold">Received By</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr>
-                    <td className="py-1 px-1.5 border-r border-black break-all max-w-[90px]">R-{bill?.invoiceNumber}</td>
-                    <td className="py-1 px-1.5 border-r border-black whitespace-nowrap">{bill?.createdAt ? new Date(bill.createdAt).toLocaleString('en-IN', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit', hour12: false }).replace(',', '') : ''}</td>
-                    <td className="text-right py-1 px-1.5 border-r border-black">{bill?.totalAmount?.toFixed(2)}</td>
-                    <td className="py-1 px-1.5 border-r border-black">{bill?.paymentMethod || 'Cash'}</td>
-                    <td className="py-1 px-1.5 uppercase">{bill?.receivedBy || bill?.cashier?.name || 'ADMIN'}</td>
-                  </tr>
-                </tbody>
-              </table>
-              <div className="italic text-[13px] mt-2">
-                Amount Paid in Words : {numberToWords(Math.round(bill?.totalAmount || 0))} Rupees Only
-              </div>
-              
-              <div className="mt-8 text-[13px] text-center w-full">
-                Authorized By : {bill?.branch?.store?.name || 'MERL DIAGNOSTICS'}
-              </div>
-            </div>
-
-            {/* Right side: Summary */}
-            <div className="flex flex-col text-[13px]">
-              <div className="flex justify-between mb-1">
-                <span className="w-32">Gross Bill Amount</span>
-                <span className="w-4">:</span>
-                <span className="flex-1 text-right">{bill?.subtotal?.toFixed(2) || '0.00'}</span>
-              </div>
-              {bill?.discountAmount > 0 && (
-                <div className="flex justify-between mb-1">
-                  <span className="w-32">Discount</span>
-                  <span className="w-4">:</span>
-                  <span className="flex-1 text-right">-{bill?.discountAmount?.toFixed(2)}</span>
-                </div>
-              )}
-              {bill?.cgstAmount > 0 && (
-                <div className="flex justify-between mb-1">
-                  <span className="w-32">CGST</span>
-                  <span className="w-4">:</span>
-                  <span className="flex-1 text-right">{bill?.cgstAmount?.toFixed(2)}</span>
-                </div>
-              )}
-              {bill?.sgstAmount > 0 && (
-                <div className="flex justify-between mb-1">
-                  <span className="w-32">SGST</span>
-                  <span className="w-4">:</span>
-                  <span className="flex-1 text-right">{bill?.sgstAmount?.toFixed(2)}</span>
-                </div>
-              )}
-              <div className="flex justify-between mb-1">
-                <span className="w-32">Net Amount</span>
-                <span className="w-4">:</span>
-                <span className="flex-1 text-right">{bill?.totalAmount?.toFixed(2) || '0.00'}</span>
-              </div>
-              <div className="flex justify-between mb-1">
-                <span className="w-32">Paid Amount</span>
-                <span className="w-4">:</span>
-                <span className="flex-1 text-right">{bill?.totalAmount?.toFixed(2) || '0.00'}</span>
-              </div>
-              <div className="flex justify-between mt-1 font-bold">
-                <span className="w-32">Balance to Pay</span>
-                <span className="w-4">:</span>
-                <span className="flex-1 text-right">0.00</span>
-              </div>
-            </div>
-            
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
 
 // ─── Main POS Page ────────────────────────────────────
 export default function POSPage() {

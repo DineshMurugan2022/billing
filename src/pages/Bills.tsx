@@ -1,17 +1,25 @@
 import { useState } from 'react';
 import { keepPreviousData, useQuery } from '@tanstack/react-query';
 import { billingApi } from '../lib/api';
-import { Receipt, Search, Eye } from 'lucide-react';
+import { Receipt, Search, Eye, Printer } from 'lucide-react';
 import dayjs from 'dayjs';
+import ReceiptModal from '../components/ReceiptModal';
 
 export default function BillsPage() {
   const [search, setSearch] = useState('');
   const [page, setPage] = useState(1);
+  const [selectedBillId, setSelectedBillId] = useState<string | null>(null);
 
   const { data, isPending } = useQuery({
     queryKey: ['bills', search, page],
     queryFn: () => billingApi.list({ search, page: page.toString() }).then(r => r.data),
     placeholderData: keepPreviousData,
+  });
+
+  const { data: fullBill } = useQuery({
+    queryKey: ['bill', selectedBillId],
+    queryFn: () => (selectedBillId ? billingApi.getById(selectedBillId).then(r => r.data) : null),
+    enabled: !!selectedBillId,
   });
 
   return (
@@ -60,7 +68,13 @@ export default function BillsPage() {
                     {bill.status === 'RETURN' && <span className="badge badge-warning">Return</span>}
                   </td>
                   <td>
-                    <button className="btn-icon btn-ghost text-slate-400 hover:text-brand-400"><Eye size={14} /></button>
+                    <button
+                      onClick={() => setSelectedBillId(bill.id)}
+                      title="View & Print Receipt"
+                      className="btn-icon btn-ghost text-slate-400 hover:text-brand-400"
+                    >
+                      <Eye size={14} />
+                    </button>
                   </td>
                 </tr>
               ))}
@@ -81,6 +95,14 @@ export default function BillsPage() {
             <button key={i+1} onClick={() => setPage(i+1)} className={`w-9 h-9 rounded-lg text-sm font-medium ${page === i+1 ? 'bg-brand-600 text-white' : 'btn-secondary'}`}>{i+1}</button>
           ))}
         </div>
+      )}
+
+      {/* Receipt Modal */}
+      {fullBill && (
+        <ReceiptModal
+          bill={fullBill}
+          onClose={() => setSelectedBillId(null)}
+        />
       )}
     </div>
   );
